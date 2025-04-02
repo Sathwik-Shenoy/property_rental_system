@@ -1,0 +1,350 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.tenant-stats {
+    background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 15px;
+    margin-bottom: 20px;
+}
+
+.stats-item {
+    text-align: center;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    backdrop-filter: blur(5px);
+}
+
+.table-responsive {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.table {
+    margin-bottom: 0;
+}
+
+.table thead th {
+    background-color: #f8f9fa;
+    border-bottom: 2px solid #dee2e6;
+}
+
+.badge {
+    padding: 8px 12px;
+    border-radius: 20px;
+}
+
+.action-buttons .btn {
+    margin: 0 2px;
+    border-radius: 20px;
+    padding: 5px 10px;
+}
+
+.modal-content {
+    border-radius: 15px;
+    overflow: hidden;
+}
+
+.form-control, .form-select {
+    border-radius: 10px;
+    padding: 10px 15px;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.25);
+    border-color: #0d6efd;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fade-in {
+    animation: fadeIn 0.5s ease forwards;
+}
+</style>
+
+<div class="container-fluid animate-fade-in">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="display-4">Tenant Management</h2>
+        {% if current_user.role in ['admin', 'landlord'] %}
+        <button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#addTenantModal">
+            <i class="bi bi-plus-circle me-2"></i>Add New Tenant
+        </button>
+        {% endif %}
+    </div>
+
+    <!-- Tenant Statistics -->
+    <div class="row tenant-stats mb-4">
+        <div class="col-md-3">
+            <div class="stats-item">
+                <h3 class="mb-2">Total Tenants</h3>
+                <h2 class="mb-0">{{ tenants|length }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-item">
+                <h3 class="mb-2">Active Leases</h3>
+                <h2 class="mb-0">{{ tenants|selectattr('leases')|list|length }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-item">
+                <h3 class="mb-2">Avg. Income</h3>
+                {% set valid_incomes = tenants|selectattr('annual_income', 'defined')|selectattr('annual_income', 'ne', None)|map(attribute='annual_income')|list %}
+                <h2 class="mb-0">${{ (valid_incomes|sum / valid_incomes|length)|round(2) if valid_incomes|length > 0 else '0.00' }}</h2>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-item">
+                <h3 class="mb-2">Employment Rate</h3>
+                {% set employed_count = tenants|selectattr('employment_status', 'defined')|selectattr('employment_status', 'eq', 'Employed')|list|length %}
+                <h2 class="mb-0">{{ ((employed_count / tenants|length * 100) if tenants|length > 0 else 0)|round(1) }}%</h2>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <span class="input-group-text"><i class="bi bi-search"></i></span>
+                        <input type="text" class="form-control" id="searchTenant" placeholder="Search tenants...">
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select" id="filterEmployment">
+                        <option value="">Filter by Employment</option>
+                        <option value="Employed">Employed</option>
+                        <option value="Self-Employed">Self-Employed</option>
+                        <option value="Unemployed">Unemployed</option>
+                        <option value="Retired">Retired</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <select class="form-select" id="sortBy">
+                        <option value="name">Sort by Name</option>
+                        <option value="income">Sort by Income</option>
+                        <option value="date">Sort by Date Added</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tenants Table -->
+    <div class="card">
+        <div class="card-body">
+            {% if tenants and tenants|length > 0 %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Employment Status</th>
+                            <th>Annual Income</th>
+                            <th>Status</th>
+                            {% if current_user.role in ['admin', 'landlord'] %}
+                            <th>Actions</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for tenant in tenants %}
+                        <tr>
+                            <td>{{ tenant.first_name }} {{ tenant.last_name }}</td>
+                            <td>{{ tenant.email }}</td>
+                            <td>{{ tenant.phone if tenant.phone else 'Not provided' }}</td>
+                            <td>{{ tenant.employment_status if tenant.employment_status else 'Not provided' }}</td>
+                            <td>{{ '₹{:,.2f}'.format(tenant.annual_income) if tenant.annual_income else 'Not provided' }}</td>
+                            <td>
+                                {% set lease = tenant.leases|selectattr('status', 'equalto', 'Active')|first %}
+                                {% if lease %}
+                                    <span class="badge bg-warning">Occupied</span>
+                                    <small class="d-block text-muted">{{ lease.property.address }}</small>
+                                {% else %}
+                                    <span class="badge bg-success">Available</span>
+                                {% endif %}
+                            </td>
+                            {% if current_user.role in ['admin', 'landlord'] %}
+                            <td>
+                                <button class="btn btn-sm btn-info" onclick="viewTenant({{ tenant.tenant_id }})">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                {% if not lease %}
+                                <button class="btn btn-sm btn-success" onclick="createLease({{ tenant.tenant_id }})">
+                                    <i class="bi bi-file-earmark-text"></i> Create Lease
+                                </button>
+                                {% endif %}
+                            </td>
+                            {% endif %}
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-people display-4 text-muted"></i>
+                <p class="lead mt-3">No tenants found</p>
+                {% if current_user.role in ['admin', 'landlord'] %}
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTenantModal">
+                    <i class="bi bi-plus-circle me-2"></i>Add Your First Tenant
+                </button>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Add Tenant Modal -->
+{% if current_user.role in ['admin', 'landlord'] %}
+<div class="modal fade" id="addTenantModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add New Tenant</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ url_for('add_tenant') }}" method="POST">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Email *</label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">First Name *</label>
+                        <input type="text" class="form-control" name="first_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Last Name *</label>
+                        <input type="text" class="form-control" name="last_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Phone</label>
+                        <input type="tel" class="form-control" name="phone">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Date of Birth</label>
+                        <input type="date" class="form-control" name="date_of_birth">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Employment Status</label>
+                        <select class="form-select" name="employment_status">
+                            <option value="">Select Status</option>
+                            <option value="Employed">Employed</option>
+                            <option value="Self-employed">Self-employed</option>
+                            <option value="Student">Student</option>
+                            <option value="Retired">Retired</option>
+                            <option value="Unemployed">Unemployed</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Annual Income</label>
+                        <div class="input-group">
+                            <span class="input-group-text">₹</span>
+                            <input type="number" class="form-control" name="annual_income" step="1000">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Tenant</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<script>
+// Search functionality
+document.getElementById('searchTenant').addEventListener('input', function(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    document.querySelectorAll('.tenant-row').forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(searchTerm) ? '' : 'none';
+    });
+});
+
+// Employment filter
+document.getElementById('filterEmployment').addEventListener('change', function(e) {
+    const filterValue = e.target.value.toLowerCase();
+    document.querySelectorAll('.tenant-row').forEach(row => {
+        if (!filterValue) {
+            row.style.display = '';
+            return;
+        }
+        const employmentStatus = row.querySelector('td:nth-child(5)').textContent.toLowerCase();
+        row.style.display = employmentStatus.includes(filterValue) ? '' : 'none';
+    });
+});
+
+// Sort functionality
+document.getElementById('sortBy').addEventListener('change', function(e) {
+    const sortBy = e.target.value;
+    const tbody = document.querySelector('tbody');
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    
+    rows.sort((a, b) => {
+        let aVal, bVal;
+        switch(sortBy) {
+            case 'name':
+                aVal = a.querySelector('td:first-child').textContent;
+                bVal = b.querySelector('td:first-child').textContent;
+                break;
+            case 'income':
+                aVal = parseFloat(a.querySelector('td:nth-child(6)').textContent.replace('$', '')) || 0;
+                bVal = parseFloat(b.querySelector('td:nth-child(6)').textContent.replace('$', '')) || 0;
+                return bVal - aVal;
+            case 'date':
+                aVal = new Date(a.querySelector('td:nth-child(4)').textContent);
+                bVal = new Date(b.querySelector('td:nth-child(4)').textContent);
+                return bVal - aVal;
+        }
+        return aVal.localeCompare(bVal);
+    });
+    
+    rows.forEach(row => tbody.appendChild(row));
+});
+
+function viewTenant(tenantId) {
+    // Implement tenant details view
+    console.log('View tenant:', tenantId);
+}
+
+function createLease(tenantId) {
+    // Redirect to lease creation page with tenant pre-selected
+    window.location.href = `/lease/add?tenant_id=${tenantId}`;
+}
+</script>
+{% endblock %} 

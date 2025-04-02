@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Properties</h2>
+        {% if current_user.role == 'admin' or current_user.role == 'landlord' %}
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPropertyModal">
+            <i class="bi bi-plus-circle"></i> Add Property
+        </button>
+        {% endif %}
+    </div>
+
+    <!-- Properties Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Address</th>
+                            <th>Type</th>
+                            <th>Bedrooms</th>
+                            <th>Bathrooms</th>
+                            <th>Square Feet</th>
+                            <th>Monthly Rent</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for property in properties %}
+                        <tr>
+                            <td>{{ property.address }}</td>
+                            <td>{{ property.property_type }}</td>
+                            <td>{{ property.bedrooms }}</td>
+                            <td>{{ property.bathrooms }}</td>
+                            <td>{{ property.square_feet }}</td>
+                            <td>${{ "%.2f"|format(property.monthly_rent) }}</td>
+                            <td>
+                                <span class="badge {% if property.status == 'Available' %}bg-success{% elif property.status == 'Rented' %}bg-primary{% else %}bg-warning{% endif %}">
+                                    {{ property.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-info" onclick="viewProperty({{ property.property_id }})">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                {% if current_user.role == 'admin' or current_user.role == 'landlord' %}
+                                <button class="btn btn-sm btn-warning" onclick="editProperty({{ property.property_id }})">
+                                    <i class="bi bi-pencil"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="deleteProperty({{ property.property_id }})">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Property Modal -->
+    <div class="modal fade" id="addPropertyModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Property</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addPropertyForm" method="POST" action="{{ url_for('add_property') }}">
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address</label>
+                            <input type="text" class="form-control" id="address" name="address" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="property_type" class="form-label">Property Type</label>
+                            <select class="form-select" id="property_type" name="property_type" required>
+                                <option value="Apartment">Apartment</option>
+                                <option value="House">House</option>
+                                <option value="Commercial">Commercial</option>
+                                <option value="Studio">Studio</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="bedrooms" class="form-label">Bedrooms</label>
+                            <input type="number" class="form-control" id="bedrooms" name="bedrooms">
+                        </div>
+                        <div class="mb-3">
+                            <label for="bathrooms" class="form-label">Bathrooms</label>
+                            <input type="number" class="form-control" id="bathrooms" name="bathrooms">
+                        </div>
+                        <div class="mb-3">
+                            <label for="square_feet" class="form-label">Square Feet</label>
+                            <input type="number" class="form-control" id="square_feet" name="square_feet">
+                        </div>
+                        <div class="mb-3">
+                            <label for="monthly_rent" class="form-label">Monthly Rent</label>
+                            <input type="number" class="form-control" id="monthly_rent" name="monthly_rent" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Add Property</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewProperty(propertyId) {
+    // Implement view property functionality
+    window.location.href = `/property/${propertyId}`;
+}
+
+function editProperty(propertyId) {
+    // Implement edit property functionality
+    window.location.href = `/property/${propertyId}/edit`;
+}
+
+function deleteProperty(propertyId) {
+    if (confirm('Are you sure you want to delete this property?')) {
+        // Implement delete property functionality
+        fetch(`/property/${propertyId}/delete`, {
+            method: 'DELETE'
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload();
+            }
+        });
+    }
+}
+</script>
+{% endblock %} 

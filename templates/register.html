@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Register</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('register') }}">
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username *</label>
+                            <input type="text" class="form-control" id="username" name="username" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password *</label>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="role" class="form-label">Role *</label>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="">Select Role</option>
+                                <option value="tenant">Tenant</option>
+                                <option value="landlord">Landlord</option>
+                            </select>
+                        </div>
+                        <div id="tenantFields" style="display: none;">
+                            <div class="mb-3">
+                                <label for="first_name" class="form-label">First Name *</label>
+                                <input type="text" class="form-control" id="first_name" name="first_name">
+                            </div>
+                            <div class="mb-3">
+                                <label for="last_name" class="form-label">Last Name *</label>
+                                <input type="text" class="form-control" id="last_name" name="last_name">
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Register</button>
+                            <a href="{{ url_for('login') }}" class="btn btn-outline-secondary">Already have an account? Login</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('role').addEventListener('change', function() {
+    const tenantFields = document.getElementById('tenantFields');
+    const firstNameInput = document.getElementById('first_name');
+    const lastNameInput = document.getElementById('last_name');
+    
+    if (this.value === 'tenant') {
+        tenantFields.style.display = 'block';
+        firstNameInput.required = true;
+        lastNameInput.required = true;
+    } else {
+        tenantFields.style.display = 'none';
+        firstNameInput.required = false;
+        lastNameInput.required = false;
+    }
+});
+</script>
+{% endblock %} 

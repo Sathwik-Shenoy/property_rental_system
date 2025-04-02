@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PropManager - Property Rental Management System</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2C3E50;
+            --secondary-color: #1ABC9C;
+            --accent-color: #3498DB;
+            --text-color: #2C3E50;
+            --light-bg: #F8F9FA;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-color);
+            overflow-x: hidden;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, #2C3E50 0%, #3498DB 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            width: 150%;
+            height: 150%;
+            background: url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1973&q=80');
+            background-size: cover;
+            opacity: 0.1;
+            animation: slowly-move 20s infinite alternate;
+        }
+
+        @keyframes slowly-move {
+            from { transform: translate(-10%, -10%) rotate(-5deg); }
+            to { transform: translate(0%, 0%) rotate(5deg); }
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            color: white;
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+
+        .feature-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        }
+
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            color: var(--secondary-color);
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, #1ABC9C 0%, #3498DB 100%);
+            padding: 6rem 0;
+            color: white;
+            text-align: center;
+        }
+
+        .stats-section {
+            padding: 6rem 0;
+            background: var(--light-bg);
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 2rem;
+            border-radius: 15px;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .stat-number {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--secondary-color);
+            margin-bottom: 1rem;
+        }
+
+        .testimonial-card {
+            background: white;
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 1rem;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .testimonial-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            margin-bottom: 1rem;
+        }
+
+        .floating-login-btn {
+            position: fixed;
+            top: 2rem;
+            right: 2rem;
+            z-index: 1000;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            background: white;
+            color: var(--primary-color);
+            font-weight: 600;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+
+        .floating-login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .custom-shape-divider {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
+        }
+
+        .custom-shape-divider svg {
+            position: relative;
+            display: block;
+            width: calc(100% + 1.3px);
+            height: 150px;
+        }
+
+        .custom-shape-divider .shape-fill {
+            fill: #FFFFFF;
+        }
+
+        .btn-gradient {
+            background: linear-gradient(45deg, var(--secondary-color), var(--accent-color));
+            border: none;
+            color: white;
+            padding: 1rem 2.5rem;
+            border-radius: 50px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.15);
+            color: white;
+        }
+
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 4rem 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Floating Login Button -->
+    <a href="{{ url_for('login') }}" class="btn floating-login-btn">
+        <i class="bi bi-box-arrow-in-right me-2"></i>Login
+    </a>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container hero-content">
+            <div class="row align-items-center">
+                <div class="col-lg-6" data-aos="fade-right">
+                    <h1 class="hero-title">Welcome to PropManager</h1>
+                    <p class="hero-subtitle">The most comprehensive property rental management system for landlords and tenants</p>
+                    <div class="d-flex gap-3">
+                        <a href="{{ url_for('register') }}" class="btn btn-gradient btn-lg">
+                            Get Started
+                            <i class="bi bi-arrow-right ms-2"></i>
+                        </a>
+                        <a href="#features" class="btn btn-outline-light btn-lg">Learn More</a>
+                    </div>
+                </div>
+                <div class="col-lg-6" data-aos="fade-left">
+                    <img src="https://img.freepik.com/free-vector/real-estate-searching_52683-46407.jpg" alt="Property Management" class="img-fluid">
+                </div>
+            </div>
+        </div>
+        <div class="custom-shape-divider">
+            <svg data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V0H0V27.35A600.21,600.21,0,0,0,321.39,56.44Z" class="shape-fill"></path>
+            </svg>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5" data-aos="fade-up">Why Choose PropManager?</h2>
+            <div class="feature-grid">
+                <div class="feature-card" data-aos="fade-up">
+                    <i class="bi bi-house-check feature-icon"></i>
+                    <h3>Property Management</h3>
+                    <p>Easily manage multiple properties, track maintenance requests, and handle tenant applications all in one place.</p>
+                </div>
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="100">
+                    <i class="bi bi-cash-coin feature-icon"></i>
+                    <h3>Rent Collection</h3>
+                    <p>Automated rent collection, payment tracking, and financial reporting to streamline your rental income.</p>
+                </div>
+                <div class="feature-card" data-aos="fade-up" data-aos-delay="200">
+                    <i class="bi bi-file-earmark-text feature-icon"></i>
+                    <h3>Lease Management</h3>
+                    <p>Digital lease agreements, automated renewals, and document storage for hassle-free property management.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Stats Section -->
+    <section class="stats-section">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4" data-aos="fade-up">
+                    <div class="stat-card">
+                        <div class="stat-number">1000+</div>
+                        <h4>Properties Managed</h4>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="stat-card">
+                        <div class="stat-number">500+</div>
+                        <h4>Happy Landlords</h4>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="stat-card">
+                        <div class="stat-number">2000+</div>
+                        <h4>Satisfied Tenants</h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="py-5">
+        <div class="container">
+            <h2 class="text-center mb-5" data-aos="fade-up">What Our Users Say</h2>
+            <div class="row">
+                <div class="col-md-4" data-aos="fade-up">
+                    <div class="testimonial-card">
+                        <img src="https://randomuser.me/api/portraits/men/1.jpg" alt="User" class="testimonial-avatar">
+                        <h4>John Smith</h4>
+                        <p class="text-muted">Property Owner</p>
+                        <p>"PropManager has revolutionized how I manage my rental properties. The automated rent collection is a game-changer!"</p>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="100">
+                    <div class="testimonial-card">
+                        <img src="https://randomuser.me/api/portraits/women/1.jpg" alt="User" class="testimonial-avatar">
+                        <h4>Sarah Johnson</h4>
+                        <p class="text-muted">Tenant</p>
+                        <p>"Paying rent and submitting maintenance requests has never been easier. Great platform!"</p>
+                    </div>
+                </div>
+                <div class="col-md-4" data-aos="fade-up" data-aos-delay="200">
+                    <div class="testimonial-card">
+                        <img src="https://randomuser.me/api/portraits/men/2.jpg" alt="User" class="testimonial-avatar">
+                        <h4>Michael Brown</h4>
+                        <p class="text-muted">Property Manager</p>
+                        <p>"The comprehensive reporting and analytics help me make better decisions for my properties."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2 class="mb-4" data-aos="fade-up">Ready to Streamline Your Property Management?</h2>
+            <p class="mb-4" data-aos="fade-up">Join thousands of satisfied users who have transformed their property management experience</p>
+            <a href="{{ url_for('register') }}" class="btn btn-light btn-lg" data-aos="fade-up">
+                Get Started Now
+                <i class="bi bi-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-light py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4">
+                    <h5>PropManager</h5>
+                    <p>Making property management simple and efficient.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-light">About Us</a></li>
+                        <li><a href="#" class="text-light">Features</a></li>
+                        <li><a href="#" class="text-light">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Connect With Us</h5>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-light"><i class="bi bi-facebook"></i></a>
+                        <a href="#" class="text-light"><i class="bi bi-twitter"></i></a>
+                        <a href="#" class="text-light"><i class="bi bi-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <hr>
+            <div class="text-center">
+                <small>&copy; 2024 PropManager. All rights reserved.</small>
+            </div>
+        </div>
+    </footer>
+
+    <!-- AOS Animation Script -->
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+    </script>
+</body>
+</html> 

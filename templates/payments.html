@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="display-4">Payment Management</h2>
+    </div>
+
+    <!-- Payment Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Total Payments</h5>
+                    <h2 class="mb-0">${{ "%.2f"|format(payments|sum(attribute='amount')) if payments else 0 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Completed Payments</h5>
+                    <h2 class="mb-0">${{ "%.2f"|format(payments|selectattr('payment_status', 'equalto', 'Completed')|sum(attribute='amount')) if payments else 0 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Pending Payments</h5>
+                    <h2 class="mb-0">${{ "%.2f"|format(payments|selectattr('payment_status', 'equalto', 'Pending')|sum(attribute='amount')) if payments else 0 }}</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body">
+                    <h5 class="card-title">Failed Payments</h5>
+                    <h2 class="mb-0">${{ "%.2f"|format(payments|selectattr('payment_status', 'equalto', 'Failed')|sum(attribute='amount')) if payments else 0 }}</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payments Table -->
+    <div class="card">
+        <div class="card-body">
+            {% if payments %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Lease</th>
+                            <th>Amount</th>
+                            <th>Payment Type</th>
+                            <th>Payment Date</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for payment in payments %}
+                        <tr>
+                            <td>
+                                {{ payment.lease.property.address }} - 
+                                {{ payment.lease.tenant.first_name }} {{ payment.lease.tenant.last_name }}
+                            </td>
+                            <td>${{ "%.2f"|format(payment.amount) }}</td>
+                            <td>{{ payment.payment_type }}</td>
+                            <td>{{ payment.payment_date.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <span class="badge {% if payment.payment_status == 'Completed' %}bg-success{% elif payment.payment_status == 'Pending' %}bg-warning{% else %}bg-danger{% endif %}">
+                                    {{ payment.payment_status }}
+                                </span>
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-info" onclick="viewPayment({{ payment.payment_id }})">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                                {% if payment.payment_status == 'Pending' and (current_user.role in ['admin', 'landlord']) %}
+                                <button class="btn btn-sm btn-success" onclick="updatePaymentStatus({{ payment.payment_id }}, 'Completed')">
+                                    <i class="bi bi-check-circle"></i>
+                                </button>
+                                <button class="btn btn-sm btn-danger" onclick="updatePaymentStatus({{ payment.payment_id }}, 'Failed')">
+                                    <i class="bi bi-x-circle"></i>
+                                </button>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div class="text-center py-4">
+                <i class="bi bi-cash display-4 text-muted"></i>
+                <p class="lead mt-3">No payments found</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+function viewPayment(paymentId) {
+    // Implement payment viewing functionality
+    alert('Payment details view coming soon!');
+}
+
+function updatePaymentStatus(paymentId, status) {
+    if (confirm(`Are you sure you want to mark this payment as ${status}?`)) {
+        fetch(`/payment/${paymentId}/status`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ status: status })
+        }).then(response => {
+            if (response.ok) {
+                window.location.reload();
+            }
+        });
+    }
+}
+
+// Add smooth animations
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.card');
+    cards.forEach((card, index) => {
+        card.style.animation = `fadeIn 0.3s ease forwards ${index * 0.1}s`;
+        card.style.opacity = '0';
+    });
+});
+</script>
+
+<style>
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+}
+
+.badge {
+    padding: 8px 12px;
+    border-radius: 20px;
+}
+
+.btn {
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+</style>
+{% endblock %} 
