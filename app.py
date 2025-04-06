@@ -638,12 +638,11 @@ def mark_notifications_read():
 
 @app.route('/payment/<int:payment_id>/status', methods=['POST'])
 @login_required
-def update_payment_status():
+def update_payment_status(payment_id):
     if current_user.role not in ['admin', 'landlord']:
         return jsonify({'error': 'Permission denied'}), 403
     
     data = request.get_json()
-    payment_id = request.view_args['payment_id']
     new_status = data.get('status')
     
     if new_status not in ['Completed', 'Failed', 'Pending']:
